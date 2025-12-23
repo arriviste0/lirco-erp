@@ -25,8 +25,21 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const items = [
+type Item = {
+  id: string;
+  name: string;
+  description: string;
+  type: 'Finished Good' | 'Component' | 'Raw Material';
+  price: number;
+};
+
+const initialItems: Item[] = [
   {
     id: 'ITEM-001',
     name: 'Product Alpha',
@@ -58,6 +71,24 @@ const items = [
 ];
 
 export default function ItemsPage() {
+  const [items, setItems] = useState<Item[]>(initialItems);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  
+  const defaultNewItem: Item = {
+    id: `ITEM-${String(Math.floor(Math.random() * 1000) + 5).padStart(3, '0')}`,
+    name: '',
+    description: '',
+    type: 'Finished Good',
+    price: 0,
+  };
+  const [formState, setFormState] = useState<Item>(defaultNewItem);
+
+  const handleAddItem = () => {
+    setItems([...items, formState]);
+    setFormState(defaultNewItem);
+    setIsAddDialogOpen(false);
+  };
+
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -73,10 +104,63 @@ export default function ItemsPage() {
               <CardTitle>All Items</CardTitle>
               <CardDescription>A list of all items in the master.</CardDescription>
             </div>
-            <Button>
-              <PackagePlus className="mr-2" />
-              New Item
-            </Button>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={() => setFormState(defaultNewItem)}>
+                  <PackagePlus className="mr-2" />
+                  New Item
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Item</DialogTitle>
+                  <DialogDescription>
+                    Fill in the details for the new item.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">
+                      Name
+                    </Label>
+                    <Input id="name" value={formState.name} onChange={(e) => setFormState({...formState, name: e.target.value})} className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="description" className="text-right">
+                      Description
+                    </Label>
+                    <Textarea id="description" value={formState.description} onChange={(e) => setFormState({...formState, description: e.target.value})} className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="type" className="text-right">
+                      Type
+                    </Label>
+                     <Select value={formState.type} onValueChange={(value: Item['type']) => setFormState({...formState, type: value})}>
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select a type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Finished Good">Finished Good</SelectItem>
+                        <SelectItem value="Component">Component</SelectItem>
+                        <SelectItem value="Raw Material">Raw Material</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="price" className="text-right">
+                      Price
+                    </Label>
+                    <Input id="price" type="number" value={formState.price} onChange={(e) => setFormState({...formState, price: parseFloat(e.target.value) || 0})} className="col-span-3" />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DialogClose>
+                  <Button type="submit" onClick={handleAddItem}>Create Item</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
           <div className="relative mt-4">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />

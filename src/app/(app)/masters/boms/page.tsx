@@ -24,8 +24,20 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
-const boms = [
+type BOM = {
+  id: string;
+  productName: string;
+  description: string;
+  itemCount: number;
+  createdAt: string;
+};
+
+const initialBoms: BOM[] = [
   {
     id: 'BOM-PA-01',
     productName: 'Product Alpha',
@@ -43,6 +55,24 @@ const boms = [
 ];
 
 export default function BomsPage() {
+  const [boms, setBoms] = useState<BOM[]>(initialBoms);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  const defaultNewBom: BOM = {
+    id: `BOM-NEW-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
+    productName: '',
+    description: '',
+    itemCount: 0,
+    createdAt: new Date().toISOString().split('T')[0],
+  };
+  const [formState, setFormState] = useState<BOM>(defaultNewBom);
+
+  const handleAddBom = () => {
+    setBoms([...boms, formState]);
+    setFormState(defaultNewBom);
+    setIsAddDialogOpen(false);
+  };
+
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -63,10 +93,48 @@ export default function BomsPage() {
                 A list of all Bills of Materials.
               </CardDescription>
             </div>
-            <Button>
-              <FilePlus2 className="mr-2" />
-              New BOM
-            </Button>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={() => setFormState(defaultNewBom)}>
+                  <FilePlus2 className="mr-2" />
+                  New BOM
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Bill of Materials</DialogTitle>
+                  <DialogDescription>
+                    Fill in the details for the new BOM.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="productName" className="text-right">
+                      Product Name
+                    </Label>
+                    <Input id="productName" value={formState.productName} onChange={(e) => setFormState({...formState, productName: e.target.value})} className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="description" className="text-right">
+                      Description
+                    </Label>
+                    <Textarea id="description" value={formState.description} onChange={(e) => setFormState({...formState, description: e.target.value})} className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="itemCount" className="text-right">
+                      Item Count
+                    </Label>
+                    <Input id="itemCount" type="number" value={formState.itemCount} onChange={(e) => setFormState({...formState, itemCount: parseInt(e.target.value) || 0})} className="col-span-3" />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DialogClose>
+                  <Button type="submit" onClick={handleAddBom}>Create BOM</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
           <div className="relative mt-4">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
