@@ -1,1 +1,5 @@
-// Flows will be imported for their side effects in this file.
+import { config } from 'dotenv';
+config();
+
+import '@/ai/flows/classify-and-summarize-email.ts';
+import '@/ai/flows/draft-email-reply-and-suggest-actions.ts';
