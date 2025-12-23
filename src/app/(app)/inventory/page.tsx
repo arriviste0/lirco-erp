@@ -17,7 +17,17 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Boxes, PackagePlus, DollarSign, AlertTriangle, ArchiveX, PlusCircle, MinusCircle, Edit, History } from 'lucide-react';
+import {
+  Boxes,
+  PackagePlus,
+  DollarSign,
+  AlertTriangle,
+  ArchiveX,
+  PlusCircle,
+  MinusCircle,
+  Edit,
+  History,
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -31,10 +41,27 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { MoreHorizontal } from 'lucide-react';
 
-const initialInventoryItems = [
+type InventoryItem = {
+  id: string;
+  name: string;
+  poNo: string;
+  description: string;
+  quantity: number;
+  status: 'In Stock' | 'Low Stock' | 'Out of Stock';
+  price: number;
+  dateOfEntry?: string;
+  supplier?: string;
+};
+
+const initialInventoryItems: InventoryItem[] = [
   {
     id: 'ITEM-001',
     name: 'Product Alpha',
@@ -73,9 +100,24 @@ const initialInventoryItems = [
   },
 ];
 
+const getStatus = (quantity: number): InventoryItem['status'] => {
+    if (quantity === 0) return 'Out of Stock';
+    if (quantity < 50) return 'Low Stock';
+    return 'In Stock';
+}
+
 export default function InventoryPage() {
-  const [inventoryItems, setInventoryItems] = useState(initialInventoryItems);
-  const [newItem, setNewItem] = useState({
+  const [inventoryItems, setInventoryItems] =
+    useState<InventoryItem[]>(initialInventoryItems);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isStockDialogOpen, setIsStockDialogOpen] = useState(false);
+  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [stockAction, setStockAction] = useState<'add' | 'use' | null>(null);
+  const [stockQuantity, setStockQuantity] = useState(0);
+
+  const defaultNewItem = {
     id: '',
     name: '',
     poNo: '',
@@ -84,23 +126,73 @@ export default function InventoryPage() {
     dateOfEntry: '',
     supplier: '',
     price: 0,
-  });
+  };
+  const [formState, setFormState] = useState<Omit<InventoryItem, 'status'>>(defaultNewItem);
+  
 
   const handleAddItem = () => {
-    const status = newItem.quantity === 0 ? 'Out of Stock' : newItem.quantity < 50 ? 'Low Stock' : 'In Stock';
-    setInventoryItems([...inventoryItems, { ...newItem, status }]);
-    // Reset form
-    setNewItem({
-        id: '',
-        name: '',
-        poNo: '',
-        quantity: 0,
-        description: '',
-        dateOfEntry: '',
-        supplier: '',
-        price: 0,
-    });
+    const newItem: InventoryItem = {
+      ...formState,
+      status: getStatus(formState.quantity),
+    };
+    setInventoryItems([...inventoryItems, newItem]);
+    setFormState(defaultNewItem);
+    setIsAddDialogOpen(false);
   };
+  
+  const handleEditItem = () => {
+    if(!selectedItem) return;
+    const updatedItem = {
+      ...formState,
+      quantity: selectedItem.quantity,
+      status: getStatus(selectedItem.quantity),
+    };
+    setInventoryItems(inventoryItems.map(item => item.id === selectedItem.id ? updatedItem : item));
+    setIsEditDialogOpen(false);
+    setSelectedItem(null);
+  }
+
+  const handleOpenEditDialog = (item: InventoryItem) => {
+    setSelectedItem(item);
+    setFormState(item);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleOpenStockDialog = (item: InventoryItem, action: 'add' | 'use') => {
+    setSelectedItem(item);
+    setStockAction(action);
+    setStockQuantity(0);
+    setIsStockDialogOpen(true);
+  }
+
+  const handleStockUpdate = () => {
+    if (!selectedItem || !stockAction) return;
+
+    const newQuantity = stockAction === 'add' 
+      ? selectedItem.quantity + stockQuantity 
+      : selectedItem.quantity - stockQuantity;
+    
+    if (newQuantity < 0) {
+      // Or show a toast/error message
+      alert("Cannot use more stock than available.");
+      return;
+    }
+
+    const updatedItems = inventoryItems.map(item => 
+      item.id === selectedItem.id 
+        ? { ...item, quantity: newQuantity, status: getStatus(newQuantity) }
+        : item
+    );
+    setInventoryItems(updatedItems);
+    setIsStockDialogOpen(false);
+    setSelectedItem(null);
+  }
+
+  const handleViewHistory = (item: InventoryItem) => {
+    setSelectedItem(item);
+    setIsHistoryDialogOpen(true);
+  }
+
 
   const totalStockValue = inventoryItems.reduce(
     (acc, item) => acc + item.quantity * item.price,
@@ -187,9 +279,9 @@ export default function InventoryPage() {
               A list of all items in your inventory.
             </CardDescription>
           </div>
-          <Dialog>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button onClick={() => setFormState(defaultNewItem)}>
                 <PackagePlus className="mr-2" />
                 Add Item
               </Button>
@@ -203,49 +295,56 @@ export default function InventoryPage() {
                   <Label htmlFor="itemId" className="text-right">
                     Item ID
                   </Label>
-                  <Input id="itemId" value={newItem.id} onChange={(e) => setNewItem({...newItem, id: e.target.value})} className="col-span-3" />
+                  <Input id="itemId" value={formState.id} onChange={(e) => setFormState({...formState, id: e.target.value})} className="col-span-3" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="name" className="text-right">
                     Name
                   </Label>
-                  <Input id="name" value={newItem.name} onChange={(e) => setNewItem({...newItem, name: e.target.value})} className="col-span-3" />
+                  <Input id="name" value={formState.name} onChange={(e) => setFormState({...formState, name: e.target.value})} className="col-span-3" />
                 </div>
                  <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="poNo" className="text-right">
                     PO No.
                   </Label>
-                  <Input id="poNo" value={newItem.poNo} onChange={(e) => setNewItem({...newItem, poNo: e.target.value})} className="col-span-3" />
+                  <Input id="poNo" value={formState.poNo} onChange={(e) => setFormState({...formState, poNo: e.target.value})} className="col-span-3" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="quantity" className="text-right">
                     Quantity
                   </Label>
-                  <Input id="quantity" type="number" value={newItem.quantity} onChange={(e) => setNewItem({...newItem, quantity: parseInt(e.target.value)})} className="col-span-3" />
+                  <Input id="quantity" type="number" value={formState.quantity} onChange={(e) => setFormState({...formState, quantity: parseInt(e.target.value) || 0})} className="col-span-3" />
+                </div>
+                 <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="price" className="text-right">
+                    Price
+                  </Label>
+                  <Input id="price" type="number" value={formState.price} onChange={(e) => setFormState({...formState, price: parseFloat(e.target.value) || 0})} className="col-span-3" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="description" className="text-right">
                     Description
                   </Label>
-                  <Textarea id="description" value={newItem.description} onChange={(e) => setNewItem({...newItem, description: e.target.value})} className="col-span-3" />
+                  <Textarea id="description" value={formState.description} onChange={(e) => setFormState({...formState, description: e.target.value})} className="col-span-3" />
                 </div>
                  <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="dateOfEntry" className="text-right">
                     Date of Entry
                   </Label>
-                  <Input id="dateOfEntry" type="date" value={newItem.dateOfEntry} onChange={(e) => setNewItem({...newItem, dateOfEntry: e.target.value})} className="col-span-3" />
+                  <Input id="dateOfEntry" type="date" value={formState.dateOfEntry} onChange={(e) => setFormState({...formState, dateOfEntry: e.target.value})} className="col-span-3" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="supplier" className="text-right">
                     Supplier
                   </Label>
-                  <Input id="supplier" value={newItem.supplier} onChange={(e) => setNewItem({...newItem, supplier: e.target.value})} className="col-span-3" />
+                  <Input id="supplier" value={formState.supplier} onChange={(e) => setFormState({...formState, supplier: e.target.value})} className="col-span-3" />
                 </div>
               </div>
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button type="submit" onClick={handleAddItem}>Save Item</Button>
+                    <Button variant="outline">Cancel</Button>
                 </DialogClose>
+                <Button type="submit" onClick={handleAddItem}>Save Item</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -291,19 +390,19 @@ export default function InventoryPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOpenStockDialog(item, 'add')}>
                           <PlusCircle className="mr-2 h-4 w-4" />
                           <span>Add Stock</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOpenStockDialog(item, 'use')}>
                           <MinusCircle className="mr-2 h-4 w-4" />
                           <span>Use Stock</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOpenEditDialog(item)}>
                           <Edit className="mr-2 h-4 w-4" />
                           <span>Edit Details</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleViewHistory(item)}>
                           <History className="mr-2 h-4 w-4" />
                           <span>View History</span>
                         </DropdownMenuItem>
@@ -316,6 +415,104 @@ export default function InventoryPage() {
           </Table>
         </CardContent>
       </Card>
+      
+      {/* Edit Item Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Item - {selectedItem?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+             <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-itemId" className="text-right">
+                    Item ID
+                  </Label>
+                  <Input id="edit-itemId" value={formState.id} onChange={(e) => setFormState({...formState, id: e.target.value})} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-name" className="text-right">
+                    Name
+                  </Label>
+                  <Input id="edit-name" value={formState.name} onChange={(e) => setFormState({...formState, name: e.target.value})} className="col-span-3" />
+                </div>
+                 <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-poNo" className="text-right">
+                    PO No.
+                  </Label>
+                  <Input id="edit-poNo" value={formState.poNo} onChange={(e) => setFormState({...formState, poNo: e.target.value})} className="col-span-3" />
+                </div>
+                 <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-price" className="text-right">
+                    Price
+                  </Label>
+                  <Input id="edit-price" type="number" value={formState.price} onChange={(e) => setFormState({...formState, price: parseFloat(e.target.value) || 0})} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-description" className="text-right">
+                    Description
+                  </Label>
+                  <Textarea id="edit-description" value={formState.description} onChange={(e) => setFormState({...formState, description: e.target.value})} className="col-span-3" />
+                </div>
+                 <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-dateOfEntry" className="text-right">
+                    Date of Entry
+                  </Label>
+                  <Input id="edit-dateOfEntry" type="date" value={formState.dateOfEntry} onChange={(e) => setFormState({...formState, dateOfEntry: e.target.value})} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-supplier" className="text-right">
+                    Supplier
+                  </Label>
+                  <Input id="edit-supplier" value={formState.supplier} onChange={(e) => setFormState({...formState, supplier: e.target.value})} className="col-span-3" />
+                </div>
+          </div>
+          <DialogFooter>
+             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+            <Button type="submit" onClick={handleEditItem}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Add/Use Stock Dialog */}
+      <Dialog open={isStockDialogOpen} onOpenChange={setIsStockDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{stockAction === 'add' ? 'Add Stock' : 'Use Stock'}</DialogTitle>
+            <DialogDescription>
+              Item: {selectedItem?.name} (Current: {selectedItem?.quantity})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="stock-quantity" className="text-right">
+                Quantity
+              </Label>
+              <Input id="stock-quantity" type="number" value={stockQuantity} onChange={(e) => setStockQuantity(parseInt(e.target.value) || 0)} className="col-span-3" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsStockDialogOpen(false)}>Cancel</Button>
+            <Button type="submit" onClick={handleStockUpdate}>Confirm</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View History Dialog */}
+       <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Stock History - {selectedItem?.name}</DialogTitle>
+          </DialogHeader>
+            <div className="py-4 text-center text-muted-foreground">
+                <p>History tracking is not yet implemented.</p>
+                <p>This is where stock adjustments for this item would be shown.</p>
+            </div>
+          <DialogFooter>
+            <Button onClick={() => setIsHistoryDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
