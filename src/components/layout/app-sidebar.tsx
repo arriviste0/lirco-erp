@@ -39,6 +39,8 @@ export default function AppSidebar() {
   const pathname = usePathname();
   const { settings } = useSettings();
   const { open } = useSidebar();
+  const collapsedMenuClass =
+    "group-data-[collapsible=icon]:!justify-center group-data-[collapsible=icon]:!px-2 group-data-[collapsible=icon]:[&>span]:hidden";
 
   const isActive = (path: string) => {
     return pathname === path;
@@ -76,7 +78,7 @@ export default function AppSidebar() {
               asChild
               isActive={isActive('/dashboard')}
               tooltip="Dashboard"
-              className="pl-2"
+              className={cn("pl-2", collapsedMenuClass)}
             >
               <Link href="/dashboard">
                 <Home className="size-4" />
@@ -90,20 +92,28 @@ export default function AppSidebar() {
           <Collapsible>
             <CollapsibleTrigger asChild>
               <SidebarMenuButton
-                className="w-full justify-between pl-2"
+                className={cn(
+                  "w-full justify-between pl-2",
+                  "group-data-[collapsible=icon]:!justify-center group-data-[collapsible=icon]:!px-2 group-data-[collapsible=icon]:[&>span]:hidden"
+                )}
                 isActive={isMastersActive}
               >
                 <div className="flex items-center gap-2">
                   <Library className="size-4" />
                   <span>Masters</span>
                 </div>
-                <ChevronDown className="size-4 text-sidebar-foreground/50" />
+                <ChevronDown className="size-4 text-sidebar-foreground/50 group-data-[collapsible=icon]:hidden" />
               </SidebarMenuButton>
             </CollapsibleTrigger>
             <CollapsibleContent>
               <SidebarMenu className="mx-3.5 border-l border-sidebar-border px-2.5 py-0.5">
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/masters/parties')} size="sm" className="pl-2">
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive('/masters/parties')}
+                      size="sm"
+                      className={cn("pl-2", collapsedMenuClass)}
+                    >
                       <Link href="/masters/parties">
                         <Users className="size-3.5" />
                         <span>Parties</span>
@@ -111,7 +121,12 @@ export default function AppSidebar() {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={isActive('/masters/inventory-status')} size="sm" className="pl-2">
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive('/masters/inventory-status')}
+                    size="sm"
+                    className={cn("pl-2", collapsedMenuClass)}
+                  >
                     <Link href="/masters/inventory-status">
                       <Package className="size-3.5" />
                       <span>Inventory Status</span>
@@ -127,7 +142,7 @@ export default function AppSidebar() {
               asChild
               isActive={isActive('/inventory')}
               tooltip="Inventory"
-              className="pl-2"
+              className={cn("pl-2", collapsedMenuClass)}
             >
               <Link href="/inventory">
                 <Package className="size-4" />
@@ -140,7 +155,7 @@ export default function AppSidebar() {
               asChild
               isActive={isActive('/quotations')}
               tooltip="Quotations"
-              className="pl-2"
+              className={cn("pl-2", collapsedMenuClass)}
             >
               <Link href="/quotations">
                 <Send className="size-4" />
@@ -153,7 +168,7 @@ export default function AppSidebar() {
               asChild
               isActive={isActive('/orders')}
               tooltip="Orders"
-              className="pl-2"
+              className={cn("pl-2", collapsedMenuClass)}
             >
               <Link href="/orders">
                 <Truck className="size-4" />
@@ -165,20 +180,28 @@ export default function AppSidebar() {
           <Collapsible>
             <CollapsibleTrigger asChild>
               <SidebarMenuButton
-                className="w-full justify-between pl-2"
+                className={cn(
+                  "w-full justify-between pl-2",
+                  "group-data-[collapsible=icon]:!justify-center group-data-[collapsible=icon]:!px-2 group-data-[collapsible=icon]:[&>span]:hidden"
+                )}
                 isActive={isInquiryActive}
               >
                 <div className="flex items-center gap-2">
                   <FileText className="size-4" />
                   <span>Inquiry</span>
                 </div>
-                <ChevronDown className="size-4 text-sidebar-foreground/50" />
+                <ChevronDown className="size-4 text-sidebar-foreground/50 group-data-[collapsible=icon]:hidden" />
               </SidebarMenuButton>
             </CollapsibleTrigger>
             <CollapsibleContent>
               <SidebarMenu className="mx-3.5 border-l border-sidebar-border px-2.5 py-0.5">
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={isActive('/inquiry')} size="sm" className="pl-2">
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive('/inquiry')}
+                    size="sm"
+                    className={cn("pl-2", collapsedMenuClass)}
+                  >
                     <Link href="/inquiry">
                       <FileText className="size-3.5" />
                       <span>Inquiry</span>
@@ -186,7 +209,12 @@ export default function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={isActive('/cost-sheet')} size="sm" className="pl-2">
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive('/cost-sheet')}
+                    size="sm"
+                    className={cn("pl-2", collapsedMenuClass)}
+                  >
                     <Link href="/cost-sheet">
                       <Calculator className="size-3.5" />
                       <span>Cost Sheet</span>
@@ -201,7 +229,7 @@ export default function AppSidebar() {
               asChild
               isActive={isActive('/production')}
               tooltip="Production"
-              className="pl-2"
+              className={cn("pl-2", collapsedMenuClass)}
             >
               <Link href="/production">
                 <Factory className="size-4" />
@@ -217,7 +245,7 @@ export default function AppSidebar() {
               asChild
               isActive={pathname.startsWith('/mail')}
               tooltip="Mail Inbox"
-              className="pl-2"
+              className={cn("pl-2", collapsedMenuClass)}
             >
               <Link href="/mail">
                 <Inbox className="size-4" />
@@ -230,7 +258,7 @@ export default function AppSidebar() {
               asChild
               isActive={isActive('/profile')}
               tooltip="Profile"
-              className="pl-2"
+              className={cn("pl-2", collapsedMenuClass)}
             >
               <Link href="/profile">
                 <User className="size-4" />

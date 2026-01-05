@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'ERP-Lite Pilot',
-  description: 'An ERP-Lite application pilot.',
+  title: 'Lirco Engg',
+  description: 'Lirco Engg ERP application.',
 };
 
 export default function RootLayout({

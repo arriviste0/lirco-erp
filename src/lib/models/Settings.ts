@@ -20,7 +20,7 @@ const settingsSchema = new mongoose.Schema({
   emailNotifications: { type: Boolean, default: true },
   lowStockAlerts: { type: Boolean, default: true },
   orderUpdates: { type: Boolean, default: true },
-  companyName: { type: String, default: 'ERP-Lite Corp' },
+  companyName: { type: String, default: 'Lirco Engg' },
   timezone: { type: String, default: 'utc+5:30' },
   currency: { type: String, default: 'inr' },
 }, { timestamps: true });
