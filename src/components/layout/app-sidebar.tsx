@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  Boxes,
   Calculator,
   ChevronDown,
   Factory,
@@ -146,6 +145,19 @@ export default function AppSidebar() {
               <Link href="/quotations">
                 <Send className="size-4" />
                 <span>Quotations</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={isActive('/orders')}
+              tooltip="Orders"
+              className="pl-2"
+            >
+              <Link href="/orders">
+                <Truck className="size-4" />
+                <span>Orders</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

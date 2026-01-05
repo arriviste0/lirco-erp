@@ -1566,7 +1566,7 @@ export default function CostSheetBuilderPage() {
                         />
                       </div>
                       <div className="grid gap-2">
-                        <Label>Project / PO Ref</Label>
+                        <Label>Inquiry ID</Label>
                         <Input
                           value={jobSetup.projectRef}
                           onChange={(event) =>

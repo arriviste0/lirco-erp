@@ -6,6 +6,8 @@ export interface Inquiry {
   date: string;
   name: string;
   address: string;
+  contactNo: string;
+  kindAttn: string;
   sentVia: string;
   item: string;
   widthOd: number;
@@ -31,6 +33,8 @@ const inquirySchema = new mongoose.Schema(
     date: { type: String, required: true },
     name: { type: String, required: true },
     address: { type: String, default: '' },
+    contactNo: { type: String, default: '' },
+    kindAttn: { type: String, default: '' },
     sentVia: { type: String, required: true },
     item: { type: String, required: true },
     widthOd: { type: Number, default: 0 },
@@ -50,5 +54,16 @@ const inquirySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.models.Inquiry ||
+const existingInquiryModel = mongoose.models.Inquiry as
+  | mongoose.Model<Inquiry>
+  | undefined;
+
+if (existingInquiryModel) {
+  existingInquiryModel.schema.add({
+    contactNo: { type: String, default: '' },
+    kindAttn: { type: String, default: '' },
+  });
+}
+
+export default existingInquiryModel ||
   mongoose.model<Inquiry>('Inquiry', inquirySchema);

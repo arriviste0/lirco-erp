@@ -14,7 +14,29 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const body = await request.json();
     const updated = await Inquiry.findOneAndUpdate(
       { slNo: params.slNo },
-      { ...body, slNo: params.slNo },
+      {
+        slNo: params.slNo,
+        date: body.date,
+        name: body.name,
+        address: body.address,
+        contactNo: body.contactNo ?? '',
+        kindAttn: body.kindAttn ?? '',
+        sentVia: body.sentVia,
+        item: body.item,
+        widthOd: body.widthOd,
+        thickness: body.thickness,
+        length: body.length,
+        quantity: body.quantity,
+        weightPerNo: body.weightPerNo,
+        totalWeight: body.totalWeight,
+        offerNo: body.offerNo,
+        ratePerPiece: body.ratePerPiece,
+        ratePerKg: body.ratePerKg,
+        amount: body.amount,
+        remarks: body.remarks,
+        confirmedPoNo: body.confirmedPoNo,
+        reasons: body.reasons,
+      },
       { new: true, runValidators: true }
     );
     if (!updated) {

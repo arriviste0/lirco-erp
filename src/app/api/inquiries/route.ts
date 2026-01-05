@@ -23,7 +23,29 @@ export async function POST(request: NextRequest) {
   try {
     await dbConnect();
     const body = await request.json();
-    const inquiry = new Inquiry(body);
+    const inquiry = new Inquiry({
+      slNo: body.slNo,
+      date: body.date,
+      name: body.name,
+      address: body.address,
+      contactNo: body.contactNo ?? '',
+      kindAttn: body.kindAttn ?? '',
+      sentVia: body.sentVia,
+      item: body.item,
+      widthOd: body.widthOd,
+      thickness: body.thickness,
+      length: body.length,
+      quantity: body.quantity,
+      weightPerNo: body.weightPerNo,
+      totalWeight: body.totalWeight,
+      offerNo: body.offerNo,
+      ratePerPiece: body.ratePerPiece,
+      ratePerKg: body.ratePerKg,
+      amount: body.amount,
+      remarks: body.remarks,
+      confirmedPoNo: body.confirmedPoNo,
+      reasons: body.reasons,
+    });
     await inquiry.save();
     return NextResponse.json(inquiry, { status: 201 });
   } catch (error) {

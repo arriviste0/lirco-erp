@@ -35,6 +35,8 @@ type InquiryFormState = {
   date: string;
   name: string;
   address: string;
+  contactNo: string;
+  kindAttn: string;
   sentVia: string;
   item: string;
   widthOd: string;
@@ -56,6 +58,8 @@ type InquiryRecord = {
   date: string;
   name: string;
   address: string;
+  contactNo: string;
+  kindAttn: string;
   sentVia: string;
   item: string;
   widthOd: number;
@@ -80,6 +84,8 @@ const createInitialState = (): InquiryFormState => ({
   date: '',
   name: '',
   address: '',
+  contactNo: '',
+  kindAttn: '',
   sentVia: '',
   item: '',
   widthOd: '',
@@ -100,6 +106,8 @@ const toFormState = (record: InquiryRecord): InquiryFormState => ({
   date: record.date,
   name: record.name,
   address: record.address,
+  contactNo: record.contactNo ?? '',
+  kindAttn: record.kindAttn ?? '',
   sentVia: record.sentVia,
   item: record.item,
   widthOd: record.widthOd ? String(record.widthOd) : '',
@@ -230,8 +238,15 @@ export default function InquiryPage() {
         }
         const data = await response.json();
         if (isMounted) {
-          setInquiries(data);
-          setHistory([data]);
+          const normalized = Array.isArray(data)
+            ? data.map((entry) => ({
+                ...entry,
+                contactNo: entry.contactNo ?? '',
+                kindAttn: entry.kindAttn ?? '',
+              }))
+            : [];
+          setInquiries(normalized);
+          setHistory([normalized]);
           setHistoryIndex(0);
         }
       } catch (error) {
@@ -267,6 +282,8 @@ export default function InquiryPage() {
     setSaveError('');
     const payload = {
       ...formState,
+      contactNo: formState.contactNo ?? '',
+      kindAttn: formState.kindAttn ?? '',
       widthOd: Number.parseFloat(formState.widthOd) || 0,
       thickness: Number.parseFloat(formState.thickness) || 0,
       length: Number.parseFloat(formState.length) || 0,
@@ -292,13 +309,18 @@ export default function InquiryPage() {
         throw new Error(result?.error || 'Failed to save inquiry');
       }
       const saved = await response.json();
+      const normalizedSaved = {
+        ...saved,
+        contactNo: saved?.contactNo ?? '',
+        kindAttn: saved?.kindAttn ?? '',
+      };
       if (dialogMode === 'edit' && editingId) {
         const nextList = inquiries.map((entry) =>
-          entry.slNo === editingId ? saved : entry
+          entry.slNo === editingId ? normalizedSaved : entry
         );
         applySnapshot(nextList);
       } else {
-        const nextList = [saved, ...inquiries];
+        const nextList = [normalizedSaved, ...inquiries];
         applySnapshot(nextList);
       }
       setIsDialogOpen(false);
@@ -415,6 +437,8 @@ export default function InquiryPage() {
                       <TableHead className="whitespace-nowrap">Date</TableHead>
                       <TableHead className="whitespace-nowrap">Name</TableHead>
                       <TableHead className="whitespace-nowrap">Address</TableHead>
+                      <TableHead className="whitespace-nowrap">Contact No.</TableHead>
+                      <TableHead className="whitespace-nowrap">Kind Attn.</TableHead>
                       <TableHead className="whitespace-nowrap">Sent Via</TableHead>
                       <TableHead className="whitespace-nowrap">Item</TableHead>
                       <TableHead className="whitespace-nowrap">Width / OD (mm.)</TableHead>
@@ -440,6 +464,8 @@ export default function InquiryPage() {
                         <TableCell className="whitespace-nowrap">{entry.date}</TableCell>
                         <TableCell className="whitespace-nowrap">{entry.name}</TableCell>
                         <TableCell className="min-w-[200px] whitespace-nowrap">{entry.address || '-'}</TableCell>
+                        <TableCell className="whitespace-nowrap">{entry.contactNo || '-'}</TableCell>
+                        <TableCell className="whitespace-nowrap">{entry.kindAttn || '-'}</TableCell>
                         <TableCell className="whitespace-nowrap">{entry.sentVia}</TableCell>
                         <TableCell className="whitespace-nowrap">{entry.item}</TableCell>
                         <TableCell className="whitespace-nowrap">{entry.widthOd || '-'}</TableCell>
@@ -541,13 +567,29 @@ export default function InquiryPage() {
                   </Select>
                   {errors.sentVia && <p className="text-sm text-destructive">{errors.sentVia}</p>}
                 </div>
-                <div className="space-y-2 md:col-span-2 xl:col-span-4">
+                <div className="space-y-2 md:col-span-2 xl:col-span-2">
                   <Label htmlFor="address">Address</Label>
                   <Textarea
                     id="address"
                     value={formState.address}
                     onChange={(event) => updateField('address', event.target.value)}
                     className="min-h-[90px]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contactNo">Contact No</Label>
+                  <Input
+                    id="contactNo"
+                    value={formState.contactNo}
+                    onChange={(event) => updateField('contactNo', event.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="kindAttn">Kind Attn.</Label>
+                  <Input
+                    id="kindAttn"
+                    value={formState.kindAttn}
+                    onChange={(event) => updateField('kindAttn', event.target.value)}
                   />
                 </div>
               </div>
