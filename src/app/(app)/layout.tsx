@@ -2,11 +2,8 @@
 
 import AppSidebar from '@/components/layout/app-sidebar';
 import Header from '@/components/layout/header';
-import { SidebarProvider, SidebarInset, useSidebar } from '@/components/ui/sidebar';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { InventoryProvider } from '@/lib/inventory-context';
-import { SettingsProvider, useSettings } from '@/lib/settings-context';
-import { useEffect } from 'react';
+import { SettingsProvider } from '@/lib/settings-context';
 
 export default function AppLayout({
   children,
@@ -15,41 +12,17 @@ export default function AppLayout({
 }) {
   return (
     <SettingsProvider>
-      <LayoutContent>{children}</LayoutContent>
+      <InventoryProvider>
+        <div className="min-h-screen">
+          <Header />
+          <div className="flex w-full gap-6 pb-12 pt-6">
+            <AppSidebar />
+            <main className="page-enter min-w-0 flex-1 px-4 md:px-6 lg:px-10">
+              {children}
+            </main>
+          </div>
+        </div>
+      </InventoryProvider>
     </SettingsProvider>
   );
-}
-
-function LayoutContent({ children }: { children: React.ReactNode }) {
-  const { settings } = useSettings();
-
-  return (
-    <SidebarProvider>
-      <SidebarController settings={settings} />
-      <InventoryProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <Header />
-          <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
-        </SidebarInset>
-      </InventoryProvider>
-    </SidebarProvider>
-  );
-}
-
-function SidebarController({ settings }: { settings: any }) {
-  const { setOpen } = useSidebar();
-  const isMobile = useIsMobile();
-
-  useEffect(() => {
-    if (isMobile) {
-      setOpen(false);
-      return;
-    }
-    if (settings) {
-      setOpen(!settings.sidebarCollapsed);
-    }
-  }, [isMobile, settings, setOpen]);
-
-  return null;
 }

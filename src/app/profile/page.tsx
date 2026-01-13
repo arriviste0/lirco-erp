@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 
 export default function ProfilePage() {
@@ -98,6 +99,10 @@ export default function ProfilePage() {
             Back
           </Button>
           <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              <Image src="/lirco-logo.jpg" alt="Lirco logo" width={16} height={16} />
+              Lirco
+            </div>
             <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground">
               Profile
             </h1>

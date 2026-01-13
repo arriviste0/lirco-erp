@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -40,6 +40,33 @@ type ConfirmedOrder = {
   poDate: string;
   costSheetNos: string[];
   createdAt: string;
+};
+
+type OrderInquiryItem = {
+  _id?: string;
+  slNo: string;
+  offerNo?: string;
+  item: string;
+  widthOd?: number;
+  thickness?: number;
+  length?: number;
+  quantity?: number;
+  ratePerPiece?: number;
+};
+
+type CostSheetRecord = {
+  _id: string;
+  costSheetNo: string;
+  data?: {
+    jobSetup?: {
+      product?: string;
+    };
+    summary?: {
+      costSummary?: {
+        sellingRatePerPiece?: number;
+      };
+    };
+  };
 };
 
 type InquiryRecord = {
@@ -137,9 +164,33 @@ export default function OrdersPage() {
     Array<{ name: string; address: string }>
   >([]);
   const [selectedCustomer, setSelectedCustomer] = useState('');
+  const [orderInquiries, setOrderInquiries] = useState<OrderInquiryItem[]>([]);
+  const [orderCostSheets, setOrderCostSheets] = useState<CostSheetRecord[]>([]);
 
   useEffect(() => {
     setOrders(readOrders());
+  }, []);
+
+  useEffect(() => {
+    const loadOrderDetails = async () => {
+      try {
+        const [inquiryResponse, costSheetResponse] = await Promise.all([
+          fetch('/api/inquiries'),
+          fetch('/api/cost-sheets'),
+        ]);
+        if (inquiryResponse.ok) {
+          const data = (await inquiryResponse.json()) as OrderInquiryItem[];
+          setOrderInquiries(data);
+        }
+        if (costSheetResponse.ok) {
+          const data = (await costSheetResponse.json()) as CostSheetRecord[];
+          setOrderCostSheets(data);
+        }
+      } catch (error) {
+        console.error('Failed to load order items', error);
+      }
+    };
+    loadOrderDetails();
   }, []);
 
   const persistOrders = (next: ConfirmedOrder[]) => {
@@ -377,6 +428,63 @@ export default function OrdersPage() {
     await handleAction('packing-list', packingListOrder, input);
   };
 
+  const formatSize = (entry: OrderInquiryItem) => {
+    const parts = [entry.widthOd, entry.thickness, entry.length]
+      .map((value) => (value || value === 0 ? String(value) : ''))
+      .filter((value) => value);
+    return parts.join(' X ');
+  };
+
+  const getOrderItemDetails = (order: ConfirmedOrder) => {
+    const matchedInquiries = orderInquiries.filter(
+      (entry) => entry.offerNo === order.offerNo
+    );
+    const costSheetByNo = new Map(
+      orderCostSheets.map((sheet) => [sheet.costSheetNo, sheet])
+    );
+    return matchedInquiries.map((entry, index) => {
+      const sheetNo = order.costSheetNos[index];
+      const rateFromSheet =
+        (sheetNo
+          ? costSheetByNo.get(sheetNo)?.data?.summary?.costSummary?.sellingRatePerPiece
+          : undefined) ?? entry.ratePerPiece ?? 0;
+      const qty = entry.quantity ?? 0;
+      return {
+        id: entry._id ?? entry.slNo,
+        item: entry.item || '-',
+        size: formatSize(entry) || '-',
+        qty,
+        rate: rateFromSheet,
+        amount: qty * rateFromSheet,
+      };
+    });
+  };
+  const summarizeOrderItems = (order: ConfirmedOrder) => {
+    const items = getOrderItemDetails(order);
+    if (items.length === 0) {
+      return {
+        item: '-',
+        size: '-',
+        qty: '-',
+        rate: '-',
+        amount: '-',
+      };
+    }
+    const joinValues = (values: Array<string | number>) =>
+      values.map(String).join(' | ');
+    return {
+      item: joinValues(items.map((entry) => entry.item)),
+      size: joinValues(items.map((entry) => entry.size)),
+      qty: joinValues(items.map((entry) => entry.qty)),
+      rate: joinValues(
+        items.map((entry) => (entry.rate ? entry.rate.toFixed(2) : '-'))
+      ),
+      amount: joinValues(
+        items.map((entry) => (entry.amount ? entry.amount.toFixed(2) : '-'))
+      ),
+    };
+  };
+
   return (
     <div className="w-full">
       <div className="flex flex-col gap-6">
@@ -423,62 +531,79 @@ export default function OrdersPage() {
                       <TableHead>Date</TableHead>
                       <TableHead>PO No.</TableHead>
                       <TableHead>PO Date</TableHead>
+                      <TableHead>Item Name</TableHead>
+                      <TableHead>Size</TableHead>
+                      <TableHead>Quantity</TableHead>
+                      <TableHead>Rate</TableHead>
+                      <TableHead>Amount</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {orders.map((order) => (
-                      <TableRow key={order.id}>
-                        <TableCell className="font-medium">
-                          {order.offerNo}
-                        </TableCell>
-                        <TableCell>{order.partyName || '-'}</TableCell>
-                        <TableCell>{order.offerDate || '-'}</TableCell>
-                        <TableCell>{order.poNumber || '-'}</TableCell>
-                        <TableCell>{order.poDate || '-'}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex flex-wrap justify-end gap-2">
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDelete(order.id)}
-                            >
-                              Delete
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openPackingListDialog(order)}
-                              disabled={actionLoadingId === `packing-list-${order.id}`}
-                            >
-                              {actionLoadingId === `packing-list-${order.id}`
-                                ? 'Generating...'
-                                : 'Packing List'}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleAction('work-order', order)}
-                              disabled={actionLoadingId === `work-order-${order.id}`}
-                            >
-                              {actionLoadingId === `work-order-${order.id}`
-                                ? 'Generating...'
-                                : 'Work Order'}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleAction('proforma-invoice', order)}
-                              disabled={actionLoadingId === `proforma-invoice-${order.id}`}
-                            >
-                              {actionLoadingId === `proforma-invoice-${order.id}`
-                                ? 'Generating...'
-                                : 'Proforma Invoice'}
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {orders.map((order) => {
+                      const summary = summarizeOrderItems(order);
+                      return (
+                        <Fragment key={order.id}>
+                          <TableRow key={order.id}>
+                            <TableCell className="font-medium">
+                              {order.offerNo}
+                            </TableCell>
+                            <TableCell>{order.partyName || '-'}</TableCell>
+                            <TableCell>{order.offerDate || '-'}</TableCell>
+                            <TableCell>{order.poNumber || '-'}</TableCell>
+                            <TableCell>{order.poDate || '-'}</TableCell>
+                            <TableCell>{summary.item}</TableCell>
+                            <TableCell>{summary.size}</TableCell>
+                            <TableCell>{summary.qty}</TableCell>
+                            <TableCell>{summary.rate}</TableCell>
+                            <TableCell>{summary.amount}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex flex-wrap justify-end gap-2">
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => handleDelete(order.id)}
+                                >
+                                  Delete
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openPackingListDialog(order)}
+                                  disabled={actionLoadingId === `packing-list-${order.id}`}
+                                >
+                                  {actionLoadingId === `packing-list-${order.id}`
+                                    ? 'Generating...'
+                                    : 'Packing List'}
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleAction('work-order', order)}
+                                  disabled={actionLoadingId === `work-order-${order.id}`}
+                                >
+                                  {actionLoadingId === `work-order-${order.id}`
+                                    ? 'Generating...'
+                                    : 'Work Order'}
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleAction('proforma-invoice', order)}
+                                  disabled={
+                                    actionLoadingId === `proforma-invoice-${order.id}`
+                                  }
+                                >
+                                  {actionLoadingId === `proforma-invoice-${order.id}`
+                                    ? 'Generating...'
+                                    : 'Proforma Invoice'}
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        </Fragment>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>

@@ -1482,24 +1482,24 @@ export default function CostSheetBuilderPage() {
                 Create multi-variant cost sheets with auto-filled weight tables.
               </p>
             </div>
-            <div className="text-left lg:text-center">
-              <p className="text-sm font-medium text-muted-foreground">Cost Sheet No.</p>
-              <Input
-                value={costSheetNo}
-                onChange={(event) => setCostSheetNo(event.target.value)}
-                onBlur={(event) => setCostSheetNo(event.target.value.trim())}
-                aria-invalid={Boolean(costSheetNoError)}
-                className="h-9 w-[220px] text-lg font-semibold"
-              />
-              {costSheetNoError && (
-                <p className="mt-1 text-xs text-destructive">{costSheetNoError}</p>
-              )}
-              <div className="mt-2 flex justify-start lg:justify-center">
+            <div className="text-center">
+              <div className="mx-auto flex w-full max-w-[240px] flex-col items-center">
+                <p className="text-sm font-medium text-muted-foreground">Cost Sheet No.</p>
+                <Input
+                  value={costSheetNo}
+                  onChange={(event) => setCostSheetNo(event.target.value)}
+                  onBlur={(event) => setCostSheetNo(event.target.value.trim())}
+                  aria-invalid={Boolean(costSheetNoError)}
+                  className="h-9 w-full text-center text-lg font-semibold"
+                />
+                {costSheetNoError && (
+                  <p className="mt-1 text-xs text-destructive">{costSheetNoError}</p>
+                )}
                 <Input
                   type="date"
                   value={sheetDate}
                   onChange={(event) => setSheetDate(event.target.value)}
-                  className="h-9 w-[160px]"
+                  className="mt-2 h-9 w-[180px] text-center"
                 />
               </div>
             </div>
