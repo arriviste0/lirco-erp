@@ -151,8 +151,6 @@ export default function AppSidebar() {
           </div>
         )}
 
-        <div className="mt-1" />
-
         <button
           type="button"
           onClick={() => setOpenSection((prev) => (prev === "inquiry" ? null : "inquiry"))}
