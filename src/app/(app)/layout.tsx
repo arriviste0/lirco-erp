@@ -13,7 +13,7 @@ export default function AppLayout({
     <SettingsProvider>
       <InventoryProvider>
         <SidebarProvider>
-          <div className="min-h-screen">
+          <div className="min-h-screen flex-1 w-full">
             <Header />
             <div className="flex w-full gap-6 pb-12 pt-6">
               <AppSidebar />

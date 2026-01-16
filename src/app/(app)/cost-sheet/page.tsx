@@ -1468,7 +1468,7 @@ export default function CostSheetBuilderPage() {
           'radial-gradient(circle at top, rgba(15,118,110,0.12), transparent 45%), radial-gradient(circle at bottom, rgba(249,115,22,0.12), transparent 50%)',
       } as CSSProperties}
     >
-      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 pb-10 pt-6">
+      <div className="flex w-full flex-col gap-6 px-4 pb-10 pt-6">
         <header className="rounded-2xl border bg-background/90 p-5 shadow-sm">
           <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr_1.2fr] lg:items-center">
             <div>
@@ -2606,3 +2606,4 @@ export default function CostSheetBuilderPage() {
     </div>
   );
 }
+

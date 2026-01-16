@@ -386,7 +386,7 @@ export default function InquiryPage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="w-full">
       <div className="flex flex-col gap-8">
         <div>
           <h1 className="font-headline text-3xl font-semibold">Inquiry</h1>
@@ -758,3 +758,4 @@ export default function InquiryPage() {
     </div>
   );
 }
+

@@ -118,7 +118,7 @@ export default function InventoryPage() {
   ).length;
 
   return (
-    <div className="mx-auto max-w-7xl">
+    <div className="w-full">
       <div className="flex flex-col gap-8">
       <div>
         <h1 className="font-headline text-3xl font-semibold">Inventory</h1>
@@ -244,3 +244,4 @@ export default function InventoryPage() {
     </div>
   );
 }
+

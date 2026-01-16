@@ -38,7 +38,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl">
+    <div className="w-full">
       <div className="flex flex-col gap-8">
       <div>
         <Button variant="ghost" onClick={() => router.back()} className="mb-4">
@@ -204,3 +204,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+

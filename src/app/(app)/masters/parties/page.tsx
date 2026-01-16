@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function PartiesPage() {
   return (
-    <div className="mx-auto max-w-7xl">
+    <div className="w-full">
       <div className="flex flex-col gap-8">
         <div>
           <h1 className="font-headline text-3xl font-semibold">Party Master</h1>
@@ -28,3 +28,4 @@ export default function PartiesPage() {
     </div>
   );
 }
+

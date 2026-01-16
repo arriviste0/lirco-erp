@@ -340,7 +340,7 @@ export default function InventoryStatusPage() {
   }, [inventoryStatuses]);
 
   return (
-    <div className="mx-auto max-w-7xl">
+    <div className="w-full">
       <div className="flex flex-col gap-8">
       <div>
         <h1 className="font-headline text-3xl font-semibold">
@@ -775,3 +775,4 @@ export default function InventoryStatusPage() {
     </div>
   );
 }
+
