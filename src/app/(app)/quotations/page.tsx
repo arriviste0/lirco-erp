@@ -328,8 +328,7 @@ const buildRowsFromCostSheet = (
   if (!activeVariant) return [];
   const summaryQty =
     record.data.summary?.totals?.totalQty ??
-    Number.parseFloat(record.data.jobSetup?.totalQty ?? '') ||
-    undefined;
+    (Number.parseFloat(record.data.jobSetup?.totalQty ?? '') || undefined);
   const summaryRate = record.data.summary?.costSummary?.sellingRatePerPiece;
   const firstSpec =
     activeVariant.rows?.find((row) => row.spec && row.spec.trim())?.spec?.trim() ?? '';
