@@ -17,11 +17,7 @@ export default {
     },
     extend: {
       fontFamily: {
-<<<<<<< HEAD
-        body: ['Inter', 'sans-serif'],
-=======
         body: ['Manrope', 'sans-serif'],
->>>>>>> main
         headline: ['Space Grotesk', 'sans-serif'],
         code: ['Source Code Pro', 'monospace'],
       },
